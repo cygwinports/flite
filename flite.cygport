@@ -1,0 +1,41 @@
+NAME="flite"
+VERSION=1.4
+RELEASE=1
+CATEGORY="Audio"
+SUMMARY="Small, fast speech syntesis engine"
+DESCRIPTION="Flite (festival-lite) is a small, fast run-time synthesis engine
+developed at CMU and primarily designed for small embedded machines and/or
+large servers. Flite is designed as an alternative synthesis engine to Festival
+for voices built using the FestVox suite of voice building tools."
+HOMEPAGE="http://www.speech.cs.cmu.edu/flite/"
+SRC_URI="${HOMEPAGE}/packed/flite-${VERSION}/flite-${VERSION}-release.tar.bz2"
+SRC_DIR="flite-${VERSION}-release"
+PATCH_URI="1.4-cygwin-shlib.patch"
+
+PKG_NAMES="flite libflite1 libflite-devel"
+flite_CONTENTS="usr/bin/flite*.exe usr/share/doc/"
+libflite1_CATEGORY="Libs"
+libflite1_CONTENTS="usr/bin/cygflite*-1.dll"
+libflite_devel_CATEGORY="Libs"
+libflite_devel_CONTENTS="usr/include/flite/ usr/lib/libflite*.dll.a"
+
+# created by patch
+DISTCLEANFILES="lib/Makefile"
+
+src_compile() {
+	gnuconfigize ${S}
+	lndirs
+	cd ${B}
+	cygconf --enable-shared --with-audio=oss ac_cv_header_mmsystem_h=no
+	cygmake -j1
+	cygmake -j1 -C doc/ doc
+}
+
+src_install() {
+	cd ${B}
+	dobin build/${ARCH/i6/i3}-cygwin/lib/*.dll bin/flite{,_time}.exe
+	dolib build/${ARCH/i6/i3}-cygwin/lib/*.dll.a
+	includeinto flite
+	doinclude include/*.h
+	dodoc doc/html
+}
